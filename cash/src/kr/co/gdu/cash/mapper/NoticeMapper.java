@@ -1,5 +1,6 @@
 package kr.co.gdu.cash.mapper;
 import org.apache.ibatis.annotations.Mapper;
+
 import java.util.List;
 import kr.co.gdu.cash.vo.Notice;
 

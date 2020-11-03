@@ -1,86 +1,56 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="EUC-KR">
+<meta charset="UTF-8">
 <title>Insert title here</title>
-<style type="text/css">
-	.sunday{
-		color : #FF0000;
-	}
-	.etcday{
-		color : gray;
-		opacity:0.5;
-	}
-</style>
 </head>
 <body>
-	<h1>Index</h1>
-	<h3>°øÁö»çÇ×</h3>
-	<table border="1">
-		<thead>
-			<tr>
-				<th>notice_id</th>
-				<th>notice_title</th>
-				<th>notice_date</th>
-			</tr>
-		</thead>
-		<tbody>
-			<c:forEach var="notice" items="${list }">
-				<tr>
-					<td>${notice.noticeId }</td>
-					<td>${notice.noticeTitle }</td>
-					<td>${notice.noticeDate }</td>
-				</tr>
-			</c:forEach>
-		</tbody>
-	</table>
-	<!-- ´ÙÀÌ¾î¸® -->
+	<h1>HOME</h1>
+	<!-- ê³µì§€ -->
 	<div>
-		<h3>
-			<a href="/index?currentYear=${year}&currentMonth=${month-1}">[ÀÌÀü´Þ]</a>
-			${year } ³â ${month } ¿ù
-			<a href="/index?currentYear=${year}&currentMonth=${month+1}">[´ÙÀ½´Þ]</a>
-		</h3>
-	</div>
-	<table border="1" width="100%">
-		<thead>
-			<tr>
-				<th>ÀÏ</th>
-				<th>¿ù</th>
-				<th>È­</th>
-				<th>¼ö</th>
-				<th>¸ñ</th>
-				<th>±Ý</th>
-				<th>Åä</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<c:forEach var="i" begin="1" end="${lastDay+(firstDay-1) }" step="1">
-					<c:if test = "${i - (firstDay-1) < 1}">
-						<td>&nbsp;</td>
-					</c:if>
-					<c:if test = "${i - (firstDay-1) > 0}">
-						<c:if test= "${ i % 7 == 1}">
-							<td class="sunday">${i - (firstDay-1) }</td>
-						</c:if>
-						<c:if test="${i % 7 != 1 }">
-							<td>${i - (firstDay-1) }</td>
-						</c:if>
-					</c:if>
-					<c:if test="${i%7==0 }">
-						</tr><tr>
-					</c:if>
+		<table border="1">
+			<thead>
+				<tr>
+					<td>notice_id</td>
+					<td>notice_title</td>
+					<td>notice_content</td>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="n" items="${noticeList }">
+					<tr>
+						<td>${n.noticeId }</td>
+						<td>${n.noticeTitle }</td>
+						<td>${n.noticeContent }</td>
+					</tr>
 				</c:forEach>
-				<c:if test="${(lastDay+(firstDay-1)) % 7 != 0}">
-					<c:forEach var="j" begin="1" end="${7-((lastDay+(firstDay-1))%7) }" step="1">
-							<td class="etcday">${j}</td>
-					</c:forEach>
-				</c:if>
-			</tr>
-		</tbody>
-	</table>
+			</tbody>
+		</table>	
+	</div>
+	<!-- ìˆ˜ìµ ì§€ì¶œ -->
+	<div>
+		<table border="1">
+			<thead>
+				<tr>
+					<td>ë‚ ì§œ</td>
+					<td>ìˆ˜ìž…</td>
+					<td>ì§€ì¶œ</td>
+					<td>í•©ê³„</td>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="io" items="${inOutList }">
+					<tr>
+						<td>${io["ë‚ ì§œ"]}</td>
+						<td>${io["ìˆ˜ìž…"]}</td>
+						<td>${io["ì§€ì¶œ"]}</td>
+						<td>${io["í•©ê³„"]}</td>
+					</tr>
+				</c:forEach>
+			</tbody>
+		</table>	
+	</div>
 </body>
 </html>
