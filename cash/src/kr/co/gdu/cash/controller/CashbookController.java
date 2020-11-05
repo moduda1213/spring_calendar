@@ -1,75 +1,99 @@
 package kr.co.gdu.cash.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.List;
-
 import kr.co.gdu.cash.service.CashbookService;
-import kr.co.gdu.cash.service.IndexService;
-import kr.co.gdu.cash.vo.Notice;
+import kr.co.gdu.cash.service.CategoryService;
+import kr.co.gdu.cash.vo.Cashbook;
+import kr.co.gdu.cash.vo.Category;
 
 @Controller
 public class CashbookController {
 	
 	@Autowired private CashbookService cashbookService;
+	@Autowired private CategoryService categoryService;
+	
+	
+	@PostMapping("/addCashbook")
+	public String addCashbook(Cashbook cashbook) { // 커맨드객체
+		// System.out.println(cashbook);
+		cashbookService.addCashbook(cashbook);
+		return "redirect:/cashbookByMonth"; // response.sendRedirct() -> /cashbookByDay
+	}
+	
+	@GetMapping("/addCashbook")
+	public String addCashbook(Model model,
+			@RequestParam(name = "currentYear", required = true) int currentYear,
+			@RequestParam(name = "currentMonth", required = true) int currentMonth,
+			@RequestParam(name = "currentDay", required = true) int currentDay) {
+		List<Category> categoryList = categoryService.getCategoryList();
+		model.addAttribute("categoryList", categoryList);
+		return "addCashbook"; // forward
+	}
+	
+	@GetMapping("/cashbookByDay")
+	public String cashbookByDay(Model model,
+								@RequestParam(name = "currentYear", required = true) int currentYear,
+								@RequestParam(name = "currentMonth", required = true) int currentMonth,
+								@RequestParam(name = "currentDay", required = true) int currentDay) {
+		
+		List<Cashbook> cashbookList = cashbookService.getCashbookListByDay(currentYear, currentMonth, currentDay);
+		model.addAttribute("cashbookList", cashbookList);
+		return "cashbookByDay";
+	}
 	
 	@GetMapping(value="/cashbookByMonth")
 	public String cashbookByMonth(Model model,
-				@RequestParam(name = "currentYear", defaultValue = "-1") int currentYear,
-				@RequestParam(name = "currentMonth", defaultValue = "-1") int currentMonth) { // == request.getParameter
-		//1. 요청분석
-		Calendar currentDay = Calendar.getInstance(); // 오늘 날짜 -> 20.11.02
-		if(currentYear !=-1 && currentMonth != -1) {
+			@RequestParam(name = "currentYear", defaultValue = "-1") int currentYear,
+			@RequestParam(name = "currentMonth", defaultValue = "-1") int currentMonth) { 
+		// 1-1. 요청분석
+		Calendar currentDay = Calendar.getInstance(); // 2020년 11월 2일
+		// currentYear 넘어오고, currentMonth도 넘어면
+		if(currentYear != -1 && currentMonth != -1) {
 			if(currentMonth == 0) {
-
-				currentYear -=1;
-				currentMonth = 12; 
+				currentYear -= 1;
+				currentMonth = 12;
 			}
 			if(currentMonth == 13) {
-				currentYear +=1; 
+				currentYear += 1;
 				currentMonth = 1;
 			}
 			currentDay.set(Calendar.YEAR, currentYear);
 			currentDay.set(Calendar.MONTH, currentMonth-1);
 		}
-		
-		currentDay.set(Calendar.DATE, 1);// 매 월 1일
+		currentDay.set(Calendar.DATE, 1); // 2020년 11월 1일
 		
 		currentYear = currentDay.get(Calendar.YEAR);
-		currentMonth = currentDay.get(Calendar.MONTH)+1; // 월 => 11월 || 달을 구할 때 +1 을 해줘야 현재 달이 출력된다
-		int lastDay = currentDay.getActualMaximum(Calendar.DATE); // 마지막 날짜
-		int firstDay = currentDay.get(Calendar.DAY_OF_WEEK); //현재 달의 첫번째 요일 -> 1:일 , 2: 월 ...
-		//int firstDayOfWeek = currentDay.getFirstDayOfWeek(); // getFirstDayOfWeek: 이번 달 첫번째 요일을 구하는 것이 아닌 각 나라마다 첫 요일은 다르기 때문에 
-		//System.out.println(currentDay +"<-오늘날짜");
-		//System.out.println(year +"<- 이번 년도");
-		//System.out.println(month +"<- 이번 달");
-		//System.out.println(lastDay + "<- 이번달의 마지막 날짜");
-		//System.out.println(firstDay + "<- firstDayOfWeek");
+		currentMonth = currentDay.get(Calendar.MONTH) + 1;
+		int lastDay = currentDay.getActualMaximum(Calendar.DATE);
+		int firstDayOfWeek = currentDay.get(Calendar.DAY_OF_WEEK);
+		// -----------------------------------------------------------------------------
+		int sumIn = cashbookService.getSumCashbookPriceByInOut("수입", currentYear, currentMonth);
+		int sumOut = cashbookService.getSumCashbookPriceByInOut("지출", currentYear, currentMonth);
 		
-		//------------------------------------------------------------
-		int expense = cashbookService.getSumCashBookPriceByInOut("지출", currentYear, currentMonth);
-		int income = cashbookService.getSumCashBookPriceByInOut("수입", currentYear, currentMonth);
-
-		//------------------------------------------------------------
-
-		//3. 뷰 모델 추가
-		/*
-		  1) 월 , 마지막 일(28,30,31일), 시작하는 달 1일의 요일
-		 */
-		model.addAttribute("currentYear",currentYear);
-		model.addAttribute("currentMonth",currentMonth);
-		model.addAttribute("lastDay",lastDay);
-		model.addAttribute("firstDay",firstDay);
-		model.addAttribute("expense",expense);
-		model.addAttribute("income",income);
+		// -----------------------------------------------------------------------------
+		List<Map<String, Object>> cashList = cashbookService.getCashListByMonth(currentYear, currentMonth);
+		// -------------------------------------------------------------------------------
+		
+		// 3. 뷰 모델 추가
+		model.addAttribute("currentYear", currentYear); // 년
+		model.addAttribute("currentMonth", currentMonth); // 월
+		model.addAttribute("lastDay", lastDay); // 마지막 일
+		model.addAttribute("firstDayOfWeek", firstDayOfWeek); // 1일의 요일
+		
+		model.addAttribute("sumIn", sumIn);
+		model.addAttribute("sumOut", sumOut);
+		
+		model.addAttribute("cashList", cashList);
 		
 		return "cashbookByMonth";
 	}

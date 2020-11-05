@@ -1,92 +1,83 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="EUC-KR">
+<meta charset="UTF-8">
 <title>Insert title here</title>
 <style type="text/css">
-	.sunday{
-		color : #FF0000;
-	}
-	.etcday{
-		color : gray;
-		opacity:0.5;
-	}
+	.sunday {color : #FF0000;}
 </style>
 </head>
 <body>
-	<h1>Index</h1>
-	<h3>°øÁö»çÇ×</h3>
-	<table border="1">
-		<thead>
-			<tr>
-				<th>notice_id</th>
-				<th>notice_title</th>
-				<th>notice_date</th>
-			</tr>
-		</thead>
-		<tbody>
-			<c:forEach var="notice" items="${list }">
+	<jsp:include page="/WEB-INF/view/inc/menu.jsp"></jsp:include>
+	<h1>cashbookList</h1>
+	<!-- ë‹¤ì´ì–´ë¦¬ -->
+	<div>
+		ì´ë²ˆë‹¬ ìˆ˜ì… í•©ê³„ : ${sumIn}
+	</div>
+	<div>
+		ì´ë²ˆë‹¬ ì§€ì¶œ í•©ê³„ : ${sumOut}
+	</div>
+	
+	<h3>
+		<a href="/cashbookByMonth?currentYear=${currentYear}&currentMonth=${currentMonth-1}">[ì´ì „ë‹¬]</a>
+		${currentYear}ë…„ ${currentMonth} ì›”
+		<a href="/cashbookByMonth?currentYear=${currentYear}&currentMonth=${currentMonth+1}">[ë‹¤ìŒë‹¬]</a>
+	</h3>
+	
+	<div>
+		<table border="1" width="100%">
+			<thead>
 				<tr>
-					<td>${notice.noticeId }</td>
-					<td>${notice.noticeTitle }</td>
-					<td>${notice.noticeDate }</td>
+					<th class="sunday">ì¼</th>
+					<th>ì›”</th>
+					<th>í™”</th>
+					<th>ìˆ˜</th>
+					<th>ëª©</th>
+					<th>ê¸ˆ</th>
+					<th>í† </th>
 				</tr>
-			</c:forEach>
-		</tbody>
-	</table>
-	<!-- ´ÙÀÌ¾î¸® -->
-	<div>
-		ÀÌ¹ø´Ş ¼öÀÔ ÇÕ°è : ${income}
-	</div>
-	<div>
-		ÀÌ¹ø´Ş ÁöÃâ ÇÕ°è : ${expense}
-	</div>
-	<div>
-		<h3>
-			<a href="/cashbookByMonth?currentYear=${currentYear}&currentMonth=${currentMonth-1}">[ÀÌÀü´Ş]</a>
-			${currentYear } ³â ${currentMonth } ¿ù
-			<a href="/cashbookByMonth?currentYear=${currentYear}&currentMonth=${currentMonth+1}">[´ÙÀ½´Ş]</a>
-		</h3>
-	</div>
-	<table border="1" width="100%">
-		<thead>
-			<tr>
-				<th>ÀÏ</th>
-				<th>¿ù</th>
-				<th>È­</th>
-				<th>¼ö</th>
-				<th>¸ñ</th>
-				<th>±İ</th>
-				<th>Åä</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<c:forEach var="i" begin="1" end="${lastDay+(firstDay-1) }" step="1">
-					<c:if test = "${i - (firstDay-1) < 1}">
-						<td>&nbsp;</td>
-					</c:if>
-					<c:if test = "${i - (firstDay-1) > 0}">
-						<c:if test= "${ i % 7 == 1}">
-							<td class="sunday">${i - (firstDay-1) }</td>
+			</thead>
+			<tbody>
+				<tr>
+					<c:forEach var="i" begin="1" end="${lastDay+(firstDayOfWeek-1)}" step="1">
+						<c:if test="${i-(firstDayOfWeek-1) < 1}">
+							<td>&nbsp;</td>
 						</c:if>
-						<c:if test="${i % 7 != 1 }">
-							<td>${i - (firstDay-1) }</td>
+						<c:if test="${i-(firstDayOfWeek-1) > 0}">
+							<td>
+								<div><!-- ë‚ ì§œ -->
+									<a href="/cashbookByDay?currentYear=${currentYear}&currentMonth=${currentMonth}&currentDay=${i-(firstDayOfWeek-1)}">
+										${i-(firstDayOfWeek-1)}
+									</a>
+								</div>
+								<!-- ì§€ì¶œ/ìˆ˜ì… ëª©ë¡ì´ ìˆëŠ” ë‚ ì§œë¥¼ cashListì—ì„œ ê²€ìƒ‰ -->
+								<c:forEach var="c" items="${cashList}">
+									<c:if test="${i-(firstDayOfWeek-1) == c.dday}">
+										<c:if test="${c.cashbookKind == 'ìˆ˜ì…'}">
+											<div>ìˆ˜ì… : ${c.cashbookPrice}</div>
+										</c:if>
+										<c:if test="${c.cashbookKind == 'ì§€ì¶œ'}">
+											<div>ì§€ì¶œ : ${c.cashbookPrice}</div>
+										</c:if>
+									</c:if>
+								</c:forEach>
+							</td>
 						</c:if>
-					</c:if>
-					<c:if test="${i%7==0 }">
-						</tr><tr>
-					</c:if>
-				</c:forEach>
-				<c:if test="${(lastDay+(firstDay-1)) % 7 != 0}">
-					<c:forEach var="j" begin="1" end="${7-((lastDay+(firstDay-1))%7) }" step="1">
-							<td class="etcday">${j}</td>
+						<c:if test="${i%7 == 0}">
+							</tr><tr>
+						</c:if>
 					</c:forEach>
-				</c:if>
-			</tr>
-		</tbody>
-	</table>
+					
+					<c:if test="${(lastDay+(firstDayOfWeek-1)) % 7 != 0}">
+						<c:forEach begin="1" end="${7- ((lastDay+(firstDayOfWeek-1)) % 7)}" step="1">
+							<td>&nbsp;</td>
+						</c:forEach>
+					</c:if>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 </body>
 </html>
