@@ -2,4 +2,5 @@
 <div>
 	<a href="/">index</a>
 	<a href="/cashbookByMonth">cashbook</a>
+	<a href="/admin/logout">logout</a>
 </div>
